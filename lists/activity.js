@@ -41,7 +41,11 @@ function(head, req) {
   var typeData = null;
   while (row = getRow()) {
     var o = row.doc;
-    if (o.aeresType && (!SINCE || SINCE<=o['DC.issued'])) {
+    if (o.aeresType && (!SINCE || SINCE<=o['DC.issued'])) { 
+      /* jules : pour moi si on met SINCE == o['DC.issued']ca peut marcher pour afficher les doc dune anne precise 
+      il faudra juste que dans la requete SINCE soit egale a lannée quon veut
+      il faut creer une page dacceuilavec des liens pour chaque année
+    */
       if (o.aeresType != lastType) {
         if (lastType) {
           types.push(typeData);

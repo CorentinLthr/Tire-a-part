@@ -41,7 +41,7 @@ function(head, req) {
   var typeData = null;
   while (row = getRow()) {
     var o = row.doc;
-    if (o.aeresType && (!SINCE || SINCE=o['DC.issued'])) {
+    if (o.aeresType && (!SINCE || SINCE==o['DC.issued'])) {
       if (o.aeresType != lastType) {
         if (lastType) {
           types.push(typeData);

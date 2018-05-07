@@ -7,7 +7,8 @@
       "startkey": [":by",{}],
       "endkey": [":by"],
       "include_docs": "true"
-    },
+    }
+  },
     {
     "from": "google_accueil",
     "to": "_list/google_accueil/google_accueil",
@@ -18,7 +19,7 @@
       "include_docs": "true"
     }
   },
-  }, {
+   {
     "from": "included/*",
     "to": "*"
   }, {

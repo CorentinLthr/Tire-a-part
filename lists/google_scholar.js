@@ -26,7 +26,7 @@ function(head, req) {
     });
     while (row = getRow()) {
       var o = row.doc;
-      if (!SINCE || SINCE<=o['DC.issued']) {
+      if (!SINCE || SINCE==o['DC.issued']) {
         send(toBibtex(o));
       }
     }

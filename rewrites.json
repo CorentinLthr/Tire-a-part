@@ -1,6 +1,6 @@
 [
   {
-    "from": ":google/:object",
+    "from": "google/:object",
     "to":"_show/record/:object"
     } ,
   {

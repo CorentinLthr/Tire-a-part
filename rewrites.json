@@ -1,5 +1,9 @@
 [
   {
+    "from": ":google/:object",
+    "to":"_show/record/:object"
+    } ,
+  {
     "from": "google",
     "to": "_list/google_scholar/google_scholar",
     "query": {

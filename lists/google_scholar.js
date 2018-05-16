@@ -75,7 +75,7 @@ function(head, req) {
   for each (p in this.settings.programs) {
     programs.push({key: p.normalize(), value: p});
   }
-  return Mustache.to_html(this.templates.google_scholar, {
+  return Mustache.to_html(this.templates.activity_html, {
     query: req.query,
     i18n: localized(),
     groups: this.settings.groups,

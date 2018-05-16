@@ -15,7 +15,7 @@
   },
     {
     "from": "google_accueil",
-    "to": "_show/google_accueil",
+    "to": "_show/google_accueil"
   },
    {
     "from": "included/*",

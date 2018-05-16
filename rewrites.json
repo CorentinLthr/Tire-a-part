@@ -15,13 +15,7 @@
   },
     {
     "from": "google_accueil",
-    "to": "_list/google_accueil/google_accueil",
-    "query": {
-      "descending": "true",
-      "startkey": [":by",{}],
-      "endkey": [":by"],
-      "include_docs": "true"
-    }
+    "to": "_show/google_accueil",
   },
    {
     "from": "included/*",

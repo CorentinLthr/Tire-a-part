@@ -3,18 +3,23 @@ var http = require('http');
 module.exports = function(req, res) {
   var xmldoc;
   console.log('verb GetRecord');
+  //if there is no identifier we send a badargument error
   if (!req.query.identifier) {
-    xmldoc=badArgument(req);
+    xmldoc = badArgument(req);
     res.set('Content-Type', 'application/xml');
     res.send(xmldoc);
-  }else{
+    //else we check the metadataprefix
+  } else {
     console.log('identifier ok');
+    //if there are no metadataprefix: again a badargument error
     if (!req.query.metadataPrefix) {
-      xmldoc=badArgument(req);
+      xmldoc = badArgument(req);
       res.set('Content-Type', 'application/xml');
       res.send(xmldoc);
-    }else{
+    } else {
       console.log('metadataprefix ok');
+      //we check if the metadataPrefix is oai_dc that is the only one supported as of 20/02/2018
+      //if it isn't we send a cannotDisseminateFormat error
       if (!req.query.metadataPrefix === 'oai_dc') {
         xmldoc = xmlBase(req);
         xmldoc += '<error code="cannotDisseminateFormat">oai_dc is the only supported format</error>';
@@ -37,7 +42,7 @@ module.exports = function(req, res) {
 
             // we receive the couchdb doc and parse it to an object
             var couchDBdoc = JSON.parse(data);
-            //we check if the doc exist, if it doeasnt we send an error message
+            //we check if the doc exist, if it doeasnt we send an idDoesNotExist error
 
             if (couchDBdoc.error) {
               xmldoc = xmlBase(req);
@@ -46,14 +51,7 @@ module.exports = function(req, res) {
               res.set('Content-Type', 'application/xml');
               res.send(xmldoc);
             } else {
-              // if there are no error
-
-
-              //we make a new objet that contain the desired information
-              //and is structured so it can be parsed to xml
-              //var doc = {"OAI-PMH":[{_attr:{xmlns="http://www.openarchives.org/OAI/2.0/" }}]}
-
-              //the xml is made
+              // if there are no error we make the xml;
               xmldoc = xmlBase(req);
               //checker si il fau l'uri du doc ou l'id dans couchdb
               xmldoc += '<GetRecord> <record> <header> <identifier>' + req.query.identifier + '</identifier>';
@@ -62,7 +60,7 @@ module.exports = function(req, res) {
               var tmst;
               if (couchDBdoc.timestamp) {
                 tmsp = couchDBdoc.timestamp;
-                //si on a aps de time stanp on met le 1 janvier de la date du doc
+                //if the doc doesnt have a timestamp we put it at the 1st day of the publication year
               } else {
                 tmsp = new Date(couchDBdoc['DC.issued'], 1, 1).toISOString();
               }
@@ -76,7 +74,7 @@ module.exports = function(req, res) {
               xmldoc += 'http://www.openarchives.org/OAI/2.0/oai_dc.xsd">';
 
 
-              //on ajoute les metadonne en dublin core
+              //we add the metadata in dublin core
               xmldoc += '<dc:title>' + couchDBdoc['DC.title'] + '</dc:title>';
               for (var i = 0; i < couchDBdoc['DC.creator'].length; i++) {
                 xmldoc += '<dc:creator>' + couchDBdoc['DC.creator'][i] + '</dc:creator>';
@@ -110,6 +108,7 @@ module.exports = function(req, res) {
   }
 }
 
+//create xml that is always at the start of the doc
 function xmlBase(req) {
 
   var xmldoc = '<?xml version="1.0" encoding="UTF-8"?>';
@@ -127,8 +126,8 @@ function xmlBase(req) {
   return xmldoc;
 }
 
-
-function badArgument(req){
+//create xml for badArgument error
+function badArgument(req) {
   var xmldoc = xmlBase(req);
-  var xmldoc+='<error code="badArgument">need every required parameters</error>';
+  var xmldoc += '<error code="badArgument">need every required parameters</error>';
 }

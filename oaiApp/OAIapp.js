@@ -20,7 +20,6 @@ app.use(logger('dev'));
 app.use(express.static(path.join(__dirname, 'public')));
 
 function callback(req, res) {
-
   if (req.query.verb) {
     console.log('verb ok');
     if (req.query.verb === 'GetRecord') {
@@ -28,7 +27,6 @@ function callback(req, res) {
     } else {
       res.send("pas get GetRecord");
     }
-
   } else {
     res.send("no verb");
   }

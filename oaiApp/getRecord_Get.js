@@ -41,7 +41,7 @@ module.exports = function(req, res) {
             xmldoc += '<request verb="GetRecord" identifier="' + req.query.identifier + '" ';
             //req.get('host') A VERIFIER, PA SUR
             xmldoc += 'metadatPrefix="oai_dc">' + req.get('host') + '</request>';
-            //checker si il fau l'uri ou l'id dans couchdb
+            //checker si il fau l'uri du doc ou l'id dans couchdb
             xmldoc += '<GetRecord> <record> <header> <identifier>' + req.query.identifier + '</identifier>';
             //ici on est censé mettr la date de dernière modif ou creation, on a pas cadans couchdb ???
             // donc on met la date du doc ?
@@ -54,12 +54,39 @@ module.exports = function(req, res) {
             }
             xmldoc += '<datestamp>' + tmsp + '</datestamp>';
             xmldoc += '</header>';
-            
+            xmldoc += '<metadata>';
+            xmldoc += '<oai_dc:dc  xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" ';
+            xmldoc += 'xmlns:dc="http://purl.org/dc/elements/1.1/" ';
+            xmldoc += 'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ';
+            xmldoc += ' xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ ';
+            xmldoc += 'http://www.openarchives.org/OAI/2.0/oai_dc.xsd">';
 
-              console.log("doc: " + couchDBdoc);
+
+            //on ajoute les metadonne en dublin core
+            xmldoc += '<dc:title>' + couchDBdoc['DC.title'] + '</dc:title>';
+            for (var i = 0; i < couchDBdoc['DC.creator'].length; i++) {
+              xmldoc += '<dc:creator>' +couchDBdoc['DC.creator'][i] + '</dc:creator>';
+            }
+            if(couchDBdoc.abstract){
+              xmldoc+= '<dc:description>'+couchDBdoc.abstract+'</dc:description>';
+            }
+            if(couchDBdoc['DC.issued']){
+              xmldoc+= '<dc:date>'+couchDBdoc['DC.issued']+'</dc:date>';
+            }
+            if(couchDBdoc['DC.publisher']){
+              xmldoc+='<dc:publisher>'+couchDBdoc['DC.publisher']+'</dc:publisher>';
+            }
+            if(couchDBdoc._attachments){
+            xmldoc+=  '<dc:identifier>http://publications.icd.utt.fr/'+couchDBdoc._id+'/'+Object.keys(couchDBdoc._attachments)+'</dc:identifier>';
+            xmldoc+= '<dc:format>pdf</dc:format>';
+            }
+            xmldoc+='</oai_dc:dc></metadata></record></GetRecord></OAI-PMH>';
+
+
+            console.log("doc: " + couchDBdoc);
             console.log("return: " + deb);
             //  doc = js2xmlparser.parse(doc);
-            res.send(couchDBdoc);
+            res.send(xmldoc);
           });
 
         }).on("error", (err) => {

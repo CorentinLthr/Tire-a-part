@@ -1,11 +1,13 @@
 var http = require('http');
+var badArgument = require('./badArgument.js');
+var xmlBase = require('./xmlBase.js');
 
 module.exports = function(identifier,metadataPrefix,host, res) {
   var xmldoc;
   console.log('verb GetRecord');
   //if there is no identifier we send a badargument error
   if (!identifier) {
-    xmldoc = badArgument(identifier,metadataPrefix,host);
+    xmldoc = badArgument(identifier,metadataPrefix,host,"GetRecord");
     res.set('Content-Type', 'application/xml');
     res.send(xmldoc);
     //else we check the metadataprefix
@@ -14,7 +16,7 @@ module.exports = function(identifier,metadataPrefix,host, res) {
     //if there are no metadataprefix: again a badargument error
     if (!metadataPrefix) {
       console.log("michel");
-      xmldoc = badArgument(identifier,metadataPrefix,host);
+      xmldoc = badArgument(identifier,metadataPrefix,host,"GetRecord");
       res.set('Content-Type', 'application/xml');
       res.send(xmldoc);
     } else {
@@ -22,7 +24,7 @@ module.exports = function(identifier,metadataPrefix,host, res) {
       //we check if the metadataPrefix is oai_dc that is the only one supported as of 20/02/2018
       //if it isn't we send a cannotDisseminateFormat error
       if (!(metadataPrefix === 'oai_dc')) {
-        xmldoc = xmlBase(identifier,metadataPrefix,host);
+        xmldoc = xmlBase(identifier,metadataPrefix,host,"GetRecord");
         xmldoc += '<error code="cannotDisseminateFormat">oai_dc is the only supported format</error></OAI-PMH>';
         res.set('Content-Type', 'application/xml');
         res.send(xmldoc);
@@ -46,14 +48,14 @@ module.exports = function(identifier,metadataPrefix,host, res) {
             //we check if the doc exist, if it doeasnt we send an idDoesNotExist error
 
             if (couchDBdoc.error) {
-              xmldoc = xmlBase(identifier,metadataPrefix,host);
+              xmldoc = xmlBase(identifier,metadataPrefix,host,"GetRecord");
               xmldoc += '<error code="idDoesNotExist">No matching identifier</error>';
               xmldoc += '</OAI-PMH>';
               res.set('Content-Type', 'application/xml');
               res.send(xmldoc);
             } else {
               // if there are no error we make the xml;
-              xmldoc = xmlBase(identifier,metadataPrefix,host);
+              xmldoc = xmlBase(identifier,metadataPrefix,host,"GetRecord");
               //checker si il fau l'uri du doc ou l'id dans couchdb
               xmldoc += '<GetRecord> <record> <header> <identifier>' + identifier + '</identifier>';
               //ici on est censé mettr la date de dernière modif ou creation, on a pas cadans couchdb ???
@@ -107,37 +109,4 @@ module.exports = function(identifier,metadataPrefix,host, res) {
       }
     }
   }
-}
-
-//create xml that is always at the start of the doc
-function xmlBase(identifier,metadataPrefix,host) {
-  console.log("entre xmlbase");
-
-  var xmldoc = '<?xml version="1.0" encoding="UTF-8"?>';
-  xmldoc += '<OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" ';
-  xmldoc += 'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ';
-  // CHECKER ICI LES URI, FAIRE GAFFE AUX ESPACES
-  xmldoc += 'xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ ';
-  xmldoc += 'http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">';
-  var date = new Date().toISOString();
-
-  xmldoc += '<responseDate>' + date + '</responseDate><request ';
-  if(identifier){
-  xmldoc += ' verb="GetRecord" identifier="' + identifier + '" ';
-}
-if(metadataPrefix){
-  //req.get('host') A VERIFIER, PA SUR
-  xmldoc += ' metadataPrefix="' + metadataPrefix+'"' ;
-}
-xmldoc+= '>' + host+'</request>';
-  return xmldoc;
-}
-
-//create xml for badArgument error
-function badArgument(identifier,metadataPrefix,host) {
-  console.log('entre badarg');
-  var xmldoc = xmlBase(identifier,metadataPrefix,host);
-   xmldoc += '<error code="badArgument">need every required parameters</error>';
-   xmldoc+= '</OAI-PMH>'
-   return xmldoc;
 }

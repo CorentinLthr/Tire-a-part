@@ -3,7 +3,9 @@ var express = require('express'); // npm install express
 var logger = require('morgan'); // npm install morgan
 var bodyParser = require('body-parser')// npm install bosy-parser
 var http = require('http');
-var getRecord_Get = require('./getRecord_Get.js');
+
+var getRecord = require('./getRecord.js');
+var identify= require('./Identify.js');
 
 var app = express();
 
@@ -23,6 +25,7 @@ function callback(req, res) {
   var verb;
   var identifier;
   var metadataPrefix;
+  var host = req.get('host')
   if(req.method=='GET'){
     verb=req.query.verb;
     identifier=req.query.identifier;
@@ -32,10 +35,13 @@ function callback(req, res) {
     identifier=req.body.identifier;
     metadataPrefix=req.body.metadataPrefix;
   }
+
   if (verb) {
     console.log('verb ok');
     if (verb === 'GetRecord') {
-      getRecord_Get(identifier,metadataPrefix,req.get('host'),res);
+      getRecord(identifier,metadataPrefix,host,res);
+    }else if(verb=='Identify'){
+      identify(host,res);
     } else {
       res.send("pas GetRecord");
     }

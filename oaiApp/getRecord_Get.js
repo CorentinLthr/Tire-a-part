@@ -1,35 +1,36 @@
 var http = require('http');
 
-module.exports = function(req, res) {
+module.exports = function(identifier,metadataPrefix,host, res) {
   var xmldoc;
   console.log('verb GetRecord');
   //if there is no identifier we send a badargument error
-  if (!req.query.identifier) {
-    xmldoc = badArgument(req);
+  if (!identifier) {
+    xmldoc = badArgument(identifier,metadataPrefix,host);
     res.set('Content-Type', 'application/xml');
     res.send(xmldoc);
     //else we check the metadataprefix
   } else {
     console.log('identifier ok');
     //if there are no metadataprefix: again a badargument error
-    if (!req.query.metadataPrefix) {
-      xmldoc = badArgument(req);
+    if (!metadataPrefix) {
+      console.log("michel");
+      xmldoc = badArgument(identifier,metadataPrefix,host);
       res.set('Content-Type', 'application/xml');
       res.send(xmldoc);
     } else {
       console.log('metadataprefix ok');
       //we check if the metadataPrefix is oai_dc that is the only one supported as of 20/02/2018
       //if it isn't we send a cannotDisseminateFormat error
-      if (!req.query.metadataPrefix === 'oai_dc') {
-        xmldoc = xmlBase(req);
-        xmldoc += '<error code="cannotDisseminateFormat">oai_dc is the only supported format</error>';
+      if (!(metadataPrefix === 'oai_dc')) {
+        xmldoc = xmlBase(identifier,metadataPrefix,host);
+        xmldoc += '<error code="cannotDisseminateFormat">oai_dc is the only supported format</error></OAI-PMH>';
         res.set('Content-Type', 'application/xml');
         res.send(xmldoc);
       } else {
         console.log('oai_dc ok');
 
         //we query the doc with the couchdb api
-        var deb = http.get('http://127.0.0.1:5984/tire-a-part/' + req.query.identifier, (resp) => {
+        var deb = http.get('http://127.0.0.1:5984/tire-a-part/' + identifier, (resp) => {
           let data = '';
 
           // A chunk of data has been recieved.
@@ -45,16 +46,16 @@ module.exports = function(req, res) {
             //we check if the doc exist, if it doeasnt we send an idDoesNotExist error
 
             if (couchDBdoc.error) {
-              xmldoc = xmlBase(req);
+              xmldoc = xmlBase(identifier,metadataPrefix,host);
               xmldoc += '<error code="idDoesNotExist">No matching identifier</error>';
               xmldoc += '</OAI-PMH>';
               res.set('Content-Type', 'application/xml');
               res.send(xmldoc);
             } else {
               // if there are no error we make the xml;
-              xmldoc = xmlBase(req);
+              xmldoc = xmlBase(identifier,metadataPrefix,host);
               //checker si il fau l'uri du doc ou l'id dans couchdb
-              xmldoc += '<GetRecord> <record> <header> <identifier>' + req.query.identifier + '</identifier>';
+              xmldoc += '<GetRecord> <record> <header> <identifier>' + identifier + '</identifier>';
               //ici on est censé mettr la date de dernière modif ou creation, on a pas cadans couchdb ???
               // donc on met la date du doc ?
               var tmst;
@@ -109,7 +110,8 @@ module.exports = function(req, res) {
 }
 
 //create xml that is always at the start of the doc
-function xmlBase(req) {
+function xmlBase(identifier,metadataPrefix,host) {
+  console.log("entre xmlbase");
 
   var xmldoc = '<?xml version="1.0" encoding="UTF-8"?>';
   xmldoc += '<OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" ';
@@ -119,15 +121,23 @@ function xmlBase(req) {
   xmldoc += 'http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">';
   var date = new Date().toISOString();
 
-  xmldoc += '<responseDate>' + date + '</responseDate>';
-  xmldoc += '<request verb="GetRecord" identifier="' + req.query.identifier + '" ';
+  xmldoc += '<responseDate>' + date + '</responseDate><request ';
+  if(identifier){
+  xmldoc += ' verb="GetRecord" identifier="' + identifier + '" ';
+}
+if(metadataPrefix){
   //req.get('host') A VERIFIER, PA SUR
-  xmldoc += 'metadataPrefix="' + req.query.metadataPrefix + '">' + req.get('host') + '</request>';
+  xmldoc += ' metadataPrefix="' + metadataPrefix+'"' ;
+}
+xmldoc+= '>' + host+'</request>';
   return xmldoc;
 }
 
 //create xml for badArgument error
-function badArgument(req) {
-  var xmldoc = xmlBase(req);
-  var xmldoc += '<error code="badArgument">need every required parameters</error>';
+function badArgument(identifier,metadataPrefix,host) {
+  console.log('entre badarg');
+  var xmldoc = xmlBase(identifier,metadataPrefix,host);
+   xmldoc += '<error code="badArgument">need every required parameters</error>';
+   xmldoc+= '</OAI-PMH>'
+   return xmldoc;
 }

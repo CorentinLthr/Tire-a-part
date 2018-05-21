@@ -20,12 +20,24 @@ app.use(logger('dev'));
 app.use(express.static(path.join(__dirname, 'public')));
 
 function callback(req, res) {
-  if (req.query.verb) {
+  var verb;
+  var identifier;
+  var metadataPrefix;
+  if(req.method=='GET'){
+    verb=req.query.verb;
+    identifier=req.query.identifier;
+    metadataPrefix=req.query.metadataPrefix;
+  }else if(req.method=='POST'){
+    verb=req.body.verb;
+    identifier=req.body.identifier;
+    metadataPrefix=req.body.metadataPrefix;
+  }
+  if (verb) {
     console.log('verb ok');
-    if (req.query.verb === 'GetRecord') {
-      getRecord_Get(req,res);
+    if (verb === 'GetRecord') {
+      getRecord_Get(identifier,metadataPrefix,req.get('host'),res);
     } else {
-      res.send("pas get GetRecord");
+      res.send("pas GetRecord");
     }
   } else {
     res.send("no verb");
@@ -33,17 +45,9 @@ function callback(req, res) {
 
 }
 
-function Postcallback(req, res) {
-  if (req.body.verb) {
-    res.send("verb ok");
-  } else {
-    res.send("no verb");
-  }
-
-}
 
 
-app.post('/pmh', Postcallback);
+app.post('/pmh', callback);
 app.get('/pmh', callback);
 
 // Route for everything else.

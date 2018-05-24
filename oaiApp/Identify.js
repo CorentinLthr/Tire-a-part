@@ -34,7 +34,10 @@ module.exports=function identify(host,res){
       xmldoc+='<baseURL>'+host+'</baseURL>';
       xmldoc+='<protocolVersion>2.0</protocolVersion>';
       //EMAILADMIN §!!!!!!!!
-      xmldoc+= '<adminEmail>'+email+'</adminEmail>';
+      for(var i=0;i<email.length;i++){
+          xmldoc+= '<adminEmail>'+email[i]+'</adminEmail>';
+      }
+
       xmldoc+='<earliestDatestamp>'+earliest_datestamp+'</earliestDatestamp>';
       xmldoc+='<deletedRecord>no</deletedRecord>';
       xmldoc+='<granularity>YYYY-MM-DDThh:mm:ssZ</granularity>';

@@ -1,4 +1,11 @@
-[
+[{
+  "from": "oaipmh/earliest_datestamp",
+  "to":"_view/earliest_datestamp"
+},
+{
+  "from": "oaipmh/:object",
+  "to":"../../:object"
+},
   {
     "from": "google/:object",
     "to":"_show/record/:object"

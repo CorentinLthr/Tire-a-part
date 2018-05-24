@@ -32,7 +32,7 @@ module.exports = function(identifier,metadataPrefix,host, res) {
         console.log('oai_dc ok');
 
         //we query the doc with the couchdb api
-        var deb = http.get('http://127.0.0.1:5984/tire-a-part/' + identifier, (resp) => {
+        var deb = http.get('http://127.0.0.1:5984/tire-a-part/_design/tire-a-part/_rewrite/oaipmh/' + identifier, (resp) => {
           let data = '';
 
           // A chunk of data has been recieved.
@@ -45,15 +45,19 @@ module.exports = function(identifier,metadataPrefix,host, res) {
 
             // we receive the couchdb doc and parse it to an object
             var couchDBdoc = JSON.parse(data);
+            console.log("michel"+couchDBdoc);
             //we check if the doc exist, if it doeasnt we send an idDoesNotExist error
 
             if (couchDBdoc.error) {
+              console.log("toto"+data);
               xmldoc = xmlBase(identifier,metadataPrefix,host,"GetRecord");
               xmldoc += '<error code="idDoesNotExist">No matching identifier</error>';
               xmldoc += '</OAI-PMH>';
               res.set('Content-Type', 'application/xml');
               res.send(xmldoc);
             } else {
+              console.log("toto"+data);
+              console.log("michel"+couchDBdoc);
               // if there are no error we make the xml;
               xmldoc = xmlBase(identifier,metadataPrefix,host,"GetRecord");
               //checker si il fau l'uri du doc ou l'id dans couchdb
@@ -91,6 +95,7 @@ module.exports = function(identifier,metadataPrefix,host, res) {
               if (couchDBdoc['DC.publisher']) {
                 xmldoc += '<dc:publisher>' + couchDBdoc['DC.publisher'] + '</dc:publisher>';
               }
+              //faire gaffe adresse
               if (couchDBdoc._attachments) {
                 xmldoc += '<dc:identifier>http://publications.icd.utt.fr/' + couchDBdoc._id + '/' + Object.keys(couchDBdoc._attachments) + '</dc:identifier>';
                 xmldoc += '<dc:format>pdf</dc:format>';

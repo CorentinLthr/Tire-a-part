@@ -8,6 +8,7 @@ var getRecord = require('./getRecord.js');
 var identify= require('./Identify.js');
 var listSets = require('./ListSets.js');
 var listMetadataFormats=require('./ListMetadataFormats.js');
+var xmlBase=require('./xmlBase.js');
 
 var app = express();
 
@@ -49,10 +50,16 @@ function callback(req, res) {
     }else if(verb=='ListMetadataFormats'){
       listMetadataFormats(host,res,identifier);
     }else {
-      res.send("pas GetRecord");
+      var xmldoc=xmlBase(null,null,host,null);
+      xmldoc+='<error code="badVerb">Illegal OAI verb</error></OAI-PMH>';
+      res.set('Content-Type', 'application/xml');
+      res.send(xmldoc);
     }
   } else {
-    res.send("no verb");
+    var xmldoc=xmlBase(null,null,host,null);
+    xmldoc+='<error code="badVerb">Illegal OAI verb</error></OAI-PMH>';
+    res.set('Content-Type', 'application/xml');
+    res.send(xmldoc);
   }
 
 }

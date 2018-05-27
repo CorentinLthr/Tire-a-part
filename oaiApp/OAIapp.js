@@ -6,6 +6,7 @@ var http = require('http');
 
 var getRecord = require('./getRecord.js');
 var identify= require('./Identify.js');
+var listSets = require('./ListSets.js');
 
 var app = express();
 
@@ -42,7 +43,9 @@ function callback(req, res) {
       getRecord(identifier,metadataPrefix,host,res);
     }else if(verb=='Identify'){
       identify(host,res);
-    } else {
+    } else if(verb=='ListSets'){
+      listSets(host,res);
+    }else {
       res.send("pas GetRecord");
     }
   } else {
